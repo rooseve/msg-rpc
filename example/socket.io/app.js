@@ -21,10 +21,10 @@ var app = require('http').createServer(function(req, res) {
 }), io = require('socket.io').listen(app), fs = require('fs');
 
 //require the rpc lib
-var RsWsRpc = require(__dirname + '/../../build/rpc_server.js'), RpcSvrCls = RsWsRpc.rpcServer;
+var MsgRpc = require(__dirname + '/../../build/rpc_server.js'), RpcSvrCls = MsgRpc.rpcServer;
 
 //show log
-RsWsRpc.utils.debug(1);
+MsgRpc.utils.debug(1);
 
 //Create a rpcServer
 var rpcSvr = new RpcSvrCls({
@@ -48,7 +48,7 @@ rpcSvr.regRpc('procedureA', function(socketId, args, callback) {
 
 	//response to the request
 	callback(null, {
-		timestamp : RsWsRpc.utils.timestamp(),
+		timestamp : MsgRpc.utils.timestamp(),
 		args : args
 	});
 });
@@ -58,7 +58,7 @@ rpcSvr.regService('serviceB', function(socketId, args, callback, messenger) {
 
 	//response to the request
 	callback(null, {
-		timestamp : RsWsRpc.utils.timestamp(),
+		timestamp : MsgRpc.utils.timestamp(),
 		args : args
 	});
 
@@ -71,7 +71,7 @@ rpcSvr.regService('serviceB', function(socketId, args, callback, messenger) {
 
 			messenger.sendMsg({
 				seq : seq++,
-				timestamp : RsWsRpc.utils.timestamp(),
+				timestamp : MsgRpc.utils.timestamp(),
 				msg : msg
 			});
 
@@ -89,7 +89,7 @@ rpcSvr.regService('serviceB', function(socketId, args, callback, messenger) {
 
 		cb(null, {
 			wildmatch : true,
-			timestamp : RsWsRpc.utils.timestamp(),
+			timestamp : MsgRpc.utils.timestamp(),
 			cmd : cmd,
 			args : args
 		});
@@ -99,7 +99,7 @@ rpcSvr.regService('serviceB', function(socketId, args, callback, messenger) {
 	messenger.onCmd('msger_cmdA', function(cmd, args, cb) {
 
 		cb(null, {
-			timestamp : RsWsRpc.utils.timestamp(),
+			timestamp : MsgRpc.utils.timestamp(),
 			cmd : cmd,
 			args : args
 		});

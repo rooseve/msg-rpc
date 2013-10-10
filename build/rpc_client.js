@@ -1902,8 +1902,19 @@ define('rpcClient',[ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], func
 
 	return RpcClient;
 });
-window.RsWsRpc={
+var MsgRpc={
 		Client: require('rpcClient')
 };
+
+var isNodeSvr = typeof module != 'undefined' && module.exports;
+
+if (isNodeSvr) {
+
+	module.exports = MsgRpc;
+
+} else if (typeof (window) != 'undefined') {
+
+	window.MsgRpc = MsgRpc;
+}
 
 })(window, document, void(0));

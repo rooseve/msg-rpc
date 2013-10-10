@@ -1,7 +1,7 @@
 var socket = io.connect('http://localhost:8082');
 
 //create a rpc client
-var rpcClient = new RsWsRpc.Client({
+var rpcClient = new MsgRpc.Client({
 
 	//the read message sending function
 	sendMessage : function(msg) {
