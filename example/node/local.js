@@ -27,7 +27,7 @@ var rpcSvr = new MsgRpc.rpcServer({
 });
 
 //Init the rpcSvr, register some rpc/services
-require(__dirname + '/../rpcSvr.js')(rpcSvr, MsgRpc);
+require(__dirname + '/../lib/rpcSvr.js')(rpcSvr, MsgRpc);
 
 //create a rpc client
 
@@ -42,4 +42,4 @@ var rpcClient = new MsgRpc.rpcClient({
 });
 clients[myClientId] = rpcClient;
 
-require(__dirname + '/../rpcClient.js')(rpcClient, MsgRpc);
+require(__dirname + '/../lib/rpcClient.js')(rpcClient, MsgRpc);

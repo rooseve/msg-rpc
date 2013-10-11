@@ -1,7 +1,7 @@
 /**
  * set up a http server
  */
-var server = require(__dirname + '/../httpSvr.js')(__dirname), io = require('socket.io').listen(server);
+var server = require(__dirname + '/../lib/httpSvr.js')(__dirname), io = require('socket.io').listen(server);
 
 //require the rpc lib
 var MsgRpc = require(__dirname + '/../../build/rpc_node.js'), RpcSvrCls = MsgRpc.rpcServer;
@@ -24,7 +24,7 @@ var rpcSvr = new RpcSvrCls({
 });
 
 //Init the rpcSvr, register some rpc/services
-require(__dirname + '/../rpcSvr.js')(rpcSvr, MsgRpc);
+require(__dirname + '/../lib/rpcSvr.js')(rpcSvr, MsgRpc);
 
 //socket hash
 var clients = {};
