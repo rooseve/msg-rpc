@@ -184,7 +184,8 @@ Let's say there is such a pair, MsgerA and MsgerB. It's very like that there's a
 A messenger, e.g. MsgerA got 2 group of functions:
 
 1. sendMsg / onMsg
-	
+
+
 	- Send a message to MsgerB:
 	
 			MsgerA.sendMsg(msg); 
@@ -195,7 +196,10 @@ A messenger, e.g. MsgerA got 2 group of functions:
 				//messages from MsgerA
 			});
 	
+
+
 2. callCmd / onCmd (cmd is very like rpc, just to distinguish)
+
  
  	- Call cmd which will be excuted on MsgerB
 	 
