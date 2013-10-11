@@ -71,7 +71,7 @@ Even more, msg-rpc also provides a special kind of rpc called **Rpc Service**, w
 
 ### How to use?
 
-#### There are socket.io/sockjs/node examples, refer to them for more details.
+#### There are socket.io/sockjs/node examples, reference them for more details.
 
 - Browser:
 
