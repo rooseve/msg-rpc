@@ -1,7 +1,10 @@
 {
     "name":"msg-rpc",
-    "version":"0.1.2",
-    "author":"rooseve <rooseve6891@gmail.com>",
+    "version":"0.1.3",
+    "author":{
+        "name":"rooseve",
+        "email":"rooseve6891@gmail.com"
+    },
     "description":"Bidirectional rpc support over simple message interface",
     "repository":{
         "type":"git",
