@@ -22,9 +22,7 @@ define([ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], function(utils, 
 
 		this.__msgerHash = {};
 
-		this.__seqBase = 1;
-
-		this.__idenStr = utils.randomStr(10);
+		this.__rpcSeqBase = 1;
 
 		//Listen on rpc pipeline for response
 		this.onPipeMsg(this.PipeNs.Rpc, function(data) {
@@ -90,7 +88,7 @@ define([ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], function(utils, 
 			var self = this, cmdCbHash = this.__cmdCbHash,
 
 			//an unique tag to identify this msg
-			tag = 'r' + (this.__seqBase++) + '_' + this.__idenStr;
+			tag = 'r' + (this.__rpcSeqBase++) + '_' + this.__idenStr;
 
 			var defopts = {
 				timeout : 10000

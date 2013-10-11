@@ -1,13 +1,13 @@
 {
     "name":"msg-rpc",
-    "version":"0.1.1",
+    "version":"0.1.2",
     "author":"rooseve <rooseve6891@gmail.com>",
     "description":"Bidirectional rpc support over simple message interface",
     "repository":{
         "type":"git",
         "url":"https://github.com/rooseve/msg-rpc.git"
     },
-    "main":"./build/rpc_server.js",
+    "main":"./build/rpc_node.js",
     "keywords":[
         "rpc",
         "websocket",
@@ -21,7 +21,6 @@
         "grunt-requirejs":">=0.3.5"
     },
     "dependencies":{
-        "amdefine":"~0.0.5",
-        "requirejs":"~2.1.8"
+        "amdefine":"~0.0.5"
     }
 }

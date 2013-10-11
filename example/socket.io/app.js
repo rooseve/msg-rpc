@@ -21,7 +21,7 @@ var app = require('http').createServer(function(req, res) {
 }), io = require('socket.io').listen(app), fs = require('fs');
 
 //require the rpc lib
-var MsgRpc = require(__dirname + '/../../build/rpc_server.js'), RpcSvrCls = MsgRpc.rpcServer;
+var MsgRpc = require(__dirname + '/../../build/rpc_node.js'), RpcSvrCls = MsgRpc.rpcServer;
 
 //show log
 MsgRpc.utils.debug(1);

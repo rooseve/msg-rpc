@@ -251,7 +251,7 @@ define([ 'utils', 'event', 'errors' ], function(utils, SumEvent, errors) {
 
 				return ResCmdConsumed;
 
-			}, cmdPipe, 99999);
+			}, cmdPipe, 99999999);
 
 			this.sendMessage({
 				cmd : cmd,
@@ -365,7 +365,13 @@ define([ 'utils', 'event', 'errors' ], function(utils, SumEvent, errors) {
 					get_cb(pipe)('404 Unkown cmd: ' + msg.cmd);
 				}
 
-			}, '*', 99999);
+			},
+
+			//Listen all messages and filter out the cmd ones
+			'*',
+
+			//very high priority, so we can intercept cmd msg as early as possible
+			9999999);
 		},
 		setSender : function(sender) {
 
@@ -423,7 +429,7 @@ define([ 'utils', 'event', 'errors' ], function(utils, SumEvent, errors) {
 		},
 		message : function(msg) {
 
-			this.emit('__msg', msg);
+			this.emit.apply(this, [ '__msg' ].concat(Array.prototype.slice.call(arguments)));
 
 			this.__lastMsgInTs = utils.timestamp();
 			this.__msgInCount++;

@@ -1,33 +1,36 @@
 msg-rpc
 =============
 
-Bidirectional rpc support over simple message interface
+Bidirectional Rpc(Remote procedure call) support over simple message interface, such as [WebSocket](https://developer.mozilla.org/en/docs/WebSockets "WebSocket").
 
-### The idea
 
-The idea came from an app build on [WebSocket](https://developer.mozilla.org/en/docs/WebSockets "WebSocket"). 
+### Simpe Message Vs. Rpc
 
-Websocket provide bidirectional message communication support, the interface is very simple(actually too simple for a real app), and in simple terms, it's like this:
+Simpe Message, e.g.Websocket, provides bidirectional message communication support, the interface is very simple(actually too simple for a real app), and in simple terms, it's like this:
 
 Client:
 
-	//send out a message to the server
-	sendMessage(data);
+- send out a message to the server
+
+		sendMessage(data);
 	
-	//Listen for a message came from the server
-	onMessage(function(data){
-		//handle the data
-	});
+- Listen for a message came from the server
+
+		onMessage(function(data){
+			//handle the data
+		});
 
 Server:
 
-	//send a message to specific client (identify by socket)
-	sendMessage(clientSocket, data);
+- send a message to specific client (normally identified by socket)
 
-	//Listen for messages came from clients
-	onMessage(function(clientSocket, data){
-		//use the clientSocket to identify a client
-	});
+		sendMessage(client, data);
+
+- Listen for messages came from clients
+
+		onMessage(function(client, data){
+			//get the message from client
+		});
 
 
 In the real world, when sending out a message, some kind of response is supposed, or we can say we expect it to be interactive, just like the way Http works.
@@ -48,17 +51,27 @@ Server:
 		//callback(error, result)
 	});
 
-#### What's the difference between Rpc and Message?
 
-The trick here is: if you send 2 messages, say MsgA, MsgB. Then when you got a message back, let's say MsgC, it might be a response to some message sent out, but to which one, MsgA or MsgB, or something other?
+#### What's the trick here?
 
-rpc solves such problem, when you got the rpc callback, it's for sure to be the result of corresponding rpc request.
+The trick here is: with only simple message interface, if you send 2 messages, say MsgA, MsgB. Then when you got a message back, let's say MsgC, it might be a response to some message sent out, but to which one? MsgA or MsgB, or something other?
+
+Rpc solves such problem, when you got the rpc callback, it's for sure to be the result of corresponding rpc request.
 
 ### What msg-rpc do?
 
-Providing some simple message communication methods, e.g. the ones with WebSocket, msg-rpc will use these methods to provide rpc functions, and more...
+Providing rpc support just over the simple message interface you got.
+
+Even more, msg-rpc also provides a special kind of rpc called **Rpc Service**, which make the rpc pushable, in other words, the server can also send a request to the client and expect some kind of response. 
+
 
 ### How to use?
+
+####Install
+
+	npm install msg-rpc
+
+####Example
 
 > There's a socket.io example in the source.
 
@@ -67,10 +80,10 @@ Browser:
 	//load the lib
 	<script src="/build/rpc_client.js"></script>
 
-	//create a rpc client
+	//create a rpc client, tell how to send the message out
 	var rpcClient = new MsgRpc.Client({
 	
-		//the read message sending function
+		//the real message sending function
 		sendMessage : function(msg) {
 			
 			//in socket.io, it'll like this:
@@ -107,7 +120,7 @@ Server (NodeJs):
 	
 	//Create a rpcServer
 	var rpcSvr = new RpcSvrCls({
-		//the read message sending function
+		//the real message sending function
 		sendMessage : function(msg, socketId, cb) {
 			
 			//socketId should be a string, which is passed in by the message function(below)
@@ -158,7 +171,7 @@ Server:
 
 The key point is the new parameter **messenger**.
 
-#### messenger
+#### Messenger
 
 messenger works as a pair, normally, one on the client side, the other on the server side, works the same way.
 
@@ -192,17 +205,34 @@ messenger got 2 group of functions
 
 Well, it's up to the Server, client still use the rpc method, but if the procedure is registered by "regService" on the server, then it's a Service procedure, and messenger will be passed in as the 3rd parameter.
 
-	//on server side
-	//rpcSvr.regService('serviceB'....
+	//On the server side, rpcSvr.regService('serviceB', function(socketId, args, callback, msgerSvr)....
 
 	//Then, on the client side
-	rpcClient.rpc('serviceB', args, function(err, result, messenger) {
+	rpcClient.rpc('serviceB', args, function(err, result, msgerClient) {
 
-		//here you got the messenger
-		//just say hello
-		messenger.sendMsg({
+		//here you got the messenger "msgerClient"
+
+		//just say hello to the server side messenger, which is msgerSvr
+		msgerClient.sendMsg({
 			hi : 'hello'
 		});
 	}
+
+
+###How to build
+
+msg-rpc use [Grunt](http://gruntjs.com/).
+
+In the source folder, run:
+
+	npm install
+
+	grunt
+
+If you don't installed grunt yet, run:
+
+	npm install -g grunt-cli
+	
+	grunt
 
 

@@ -30,7 +30,7 @@ define([ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], function(utils, 
 
 			function respCb(err, result) {
 
-				self.__respCmdReq(socketId, err, result, request);
+				self.__respCmdReq(err, result, request, socketId);
 			}
 
 			if (this.hasReged(request.cmd)) {
@@ -160,7 +160,7 @@ define([ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], function(utils, 
 
 			RpcServer.__super__.message.apply(this, arguments);
 		},
-		__respCmdReq : function(socketId, err, result, request) {
+		__respCmdReq : function(err, result, request, socketId) {
 
 			var self = this;
 

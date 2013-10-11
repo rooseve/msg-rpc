@@ -421,7 +421,7 @@ define('consts',[], function() {
 
 	return {
 		//an iden string of this lib
-		libIden : 'rs-rpc',
+		libIden : 'msg-rpc',
 
 		//version
 		version : 1,
@@ -1162,6 +1162,10 @@ define('rpcBase',[ 'utils', 'consts', 'errors', 'event' ], function(utils, const
 			Msger : 'rs-msger'
 		};
 
+		this.__pkSeqBase = 1;
+
+		this.__idenStr = utils.randomStr(10);
+
 		RpcBase.__super__.constructor.apply(this, arguments);
 
 		this.setSender(msgSender);
@@ -1187,10 +1191,24 @@ define('rpcBase',[ 'utils', 'consts', 'errors', 'event' ], function(utils, const
 		sendPipeMsg : function(msg, pipe/*socketId, cb*/) {
 
 			this.__msgSender.sendMessage.apply(this.__msgSender, [ {
-				m : msg,
-				p : pipe,
+				//some kind of useragent for this msg package
+				u : consts.libIden,
+
+				//lib version, as the client/server might not use the same version, this might helpful for compatibility
 				v : consts.version,
-				u : consts.libIden
+
+				//the identity str for this client/server
+				i : this.__idenStr,
+
+				//the package sequence number of this life cycle
+				s : this.__pkSeqBase++,
+
+				//the pipeline to use
+				p : pipe,
+
+				//the message data
+				m : msg
+
 			} ].concat(Array.prototype.slice.call(arguments, 2)));
 		},
 		/**
@@ -1486,7 +1504,7 @@ define('messenger',[ 'utils', 'event', 'errors' ], function(utils, SumEvent, err
 
 				return ResCmdConsumed;
 
-			}, cmdPipe, 99999);
+			}, cmdPipe, 99999999);
 
 			this.sendMessage({
 				cmd : cmd,
@@ -1600,7 +1618,13 @@ define('messenger',[ 'utils', 'event', 'errors' ], function(utils, SumEvent, err
 					get_cb(pipe)('404 Unkown cmd: ' + msg.cmd);
 				}
 
-			}, '*', 99999);
+			},
+
+			//Listen all messages and filter out the cmd ones
+			'*',
+
+			//very high priority, so we can intercept cmd msg as early as possible
+			9999999);
 		},
 		setSender : function(sender) {
 
@@ -1658,7 +1682,7 @@ define('messenger',[ 'utils', 'event', 'errors' ], function(utils, SumEvent, err
 		},
 		message : function(msg) {
 
-			this.emit('__msg', msg);
+			this.emit.apply(this, [ '__msg' ].concat(Array.prototype.slice.call(arguments)));
 
 			this.__lastMsgInTs = utils.timestamp();
 			this.__msgInCount++;
@@ -1710,9 +1734,7 @@ define('rpcClient',[ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], func
 
 		this.__msgerHash = {};
 
-		this.__seqBase = 1;
-
-		this.__idenStr = utils.randomStr(10);
+		this.__rpcSeqBase = 1;
 
 		//Listen on rpc pipeline for response
 		this.onPipeMsg(this.PipeNs.Rpc, function(data) {
@@ -1778,7 +1800,7 @@ define('rpcClient',[ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], func
 			var self = this, cmdCbHash = this.__cmdCbHash,
 
 			//an unique tag to identify this msg
-			tag = 'r' + (this.__seqBase++) + '_' + this.__idenStr;
+			tag = 'r' + (this.__rpcSeqBase++) + '_' + this.__idenStr;
 
 			var defopts = {
 				timeout : 10000

@@ -12,6 +12,10 @@ define([ 'utils', 'consts', 'errors', 'event' ], function(utils, consts, errors,
 			Msger : 'rs-msger'
 		};
 
+		this.__pkSeqBase = 1;
+
+		this.__idenStr = utils.randomStr(10);
+
 		RpcBase.__super__.constructor.apply(this, arguments);
 
 		this.setSender(msgSender);
@@ -37,10 +41,24 @@ define([ 'utils', 'consts', 'errors', 'event' ], function(utils, consts, errors,
 		sendPipeMsg : function(msg, pipe/*socketId, cb*/) {
 
 			this.__msgSender.sendMessage.apply(this.__msgSender, [ {
-				m : msg,
-				p : pipe,
+				//some kind of useragent for this msg package
+				u : consts.libIden,
+
+				//lib version, as the client/server might not use the same version, this might helpful for compatibility
 				v : consts.version,
-				u : consts.libIden
+
+				//the identity str for this client/server
+				i : this.__idenStr,
+
+				//the package sequence number of this life cycle
+				s : this.__pkSeqBase++,
+
+				//the pipeline to use
+				p : pipe,
+
+				//the message data
+				m : msg
+
 			} ].concat(Array.prototype.slice.call(arguments, 2)));
 		},
 		/**

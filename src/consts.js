@@ -6,7 +6,7 @@ define([], function() {
 
 	return {
 		//an iden string of this lib
-		libIden : 'rs-rpc',
+		libIden : 'msg-rpc',
 
 		//version
 		version : 1,

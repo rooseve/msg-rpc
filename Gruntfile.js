@@ -3,7 +3,7 @@ module.exports = function(grunt) {
 	var gconf = {
 		pkg : grunt.file.readJSON('package.json'),
 		dest : {
-			rpc_svr : 'build/rpc_server.js',
+			rpc_svr : 'build/rpc_node.js',
 			rpc_client : 'build/rpc_client.js',
 			rpc_client_min : 'build/rpc_client.min.js',
 		},
@@ -20,7 +20,7 @@ module.exports = function(grunt) {
 			svr : {
 				options : {
 					almond : false,
-					include : [ 'rpcServer' ],
+					include : [ 'rpcServer', 'rpcClient' ],
 					out : '<%= dest.rpc_svr %>',
 					wrap : {
 						startFile : [ 'snippet/rpc_svr.start.js' ],
