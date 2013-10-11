@@ -204,8 +204,10 @@ A messenger, e.g. MsgerA got 2 group of functions:
 				//here we got the response from MsgerB
 			});
 
+
 	- Listen for cmd requests from MsgerB
 	
+
 			MsgerA.onCmd(function(cmd, args, callbak) {
 		
 				//do something, and response to MsgerB

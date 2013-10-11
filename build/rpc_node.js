@@ -1584,10 +1584,37 @@ define('rpcClient',[ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], func
 
 			//pass the message to the specific messenger
 			if (msgerHash[data.tag]) {
+
 				msgerHash[data.tag].message(data.msg);
 				return;
+
+			} else {
+				//On the client side, the messenger won't be created until the callback function came
+				//But before this, the server messenger might already send a msg out, so just wait a little while
+
+				var waitMsger = getMsgerWaiter(data.msg);
+
+				this.once('__msger_created_' + data.tag, waitMsger);
+
+				var self = this;
+
+				//not that long..
+				setTimeout(function() {
+
+					self.off('__msger_created_' + data.tag, waitMsger);
+
+				}, 5000);
 			}
 		});
+	}
+
+	function getMsgerWaiter(msg) {
+
+		return function(msger) {
+
+			if (msger)
+				msger.message(msg);
+		};
 	}
 
 	utils.inherit(RpcClient, RpcBase);
@@ -1744,6 +1771,8 @@ define('rpcClient',[ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], func
 			});
 
 			msgerHash[tag] = messenger;
+
+			this.emit('__msger_created_' + tag, messenger);
 
 			return utils.hidePrivate(messenger);
 		}

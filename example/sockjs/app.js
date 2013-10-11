@@ -1,7 +1,7 @@
 /**
  * set up a http server
  */
-var server = require(__dirname + '/../httpSvr.js')(__dirname), io = require('socket.io').listen(server);
+var server = require(__dirname + '/../httpSvr.js')(__dirname);
 
 //require the rpc lib
 var MsgRpc = require(__dirname + '/../../build/rpc_node.js'), RpcSvrCls = MsgRpc.rpcServer;
@@ -16,7 +16,7 @@ var rpcSvr = new RpcSvrCls({
 		}
 
 		//send the msg
-		clients[socketId].send(JSON.stringify(msg));
+		clients[socketId].write(JSON.stringify(msg));
 
 		//always successful
 		cb(null, true);
@@ -29,27 +29,34 @@ require(__dirname + '/../rpcSvr.js')(rpcSvr, MsgRpc);
 //socket hash
 var clients = {};
 
-io.sockets.on('connection', function(socket) {
+var sockjs = require('sockjs'), echo = sockjs.createServer();
+
+echo.on('connection', function(conn) {
+
+	//random an id
+	conn.__socketId = MsgRpc.utils.randomStr(10);
 
 	//add to the clients
-	clients[socket.id] = socket;
+	clients[conn.__socketId] = conn;
 
-	//proxy the message to the rpcSvr
-	socket.on('message', function(data) {
+	conn.on('data', function(data) {
 
 		var msg = JSON.parse(data);
 
 		if (rpcSvr.isRpcMsg(msg))
-			rpcSvr.message(msg, socket.id);
+			rpcSvr.message(msg, conn.__socketId);
 	});
 
 	//cleanup when disconnect
-	socket.on('disconnect', function() {
+	conn.on('close', function() {
 
-		rpcSvr.clearupSocketId(socket.id);
-		delete clients[socket.id];
+		rpcSvr.clearupSocketId(conn.__socketId);
+		delete clients[conn.__socketId];
 	});
 });
 
-//Listen and go
-server.listen(8082);
+echo.installHandlers(server, {
+	prefix : '/echo'
+});
+
+server.listen(8083);

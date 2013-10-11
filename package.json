@@ -1,6 +1,6 @@
 {
     "name":"msg-rpc",
-    "version":"0.1.3",
+    "version":"0.1.4",
     "author":{
         "name":"rooseve",
         "email":"rooseve6891@gmail.com"
@@ -10,20 +10,30 @@
         "type":"git",
         "url":"https://github.com/rooseve/msg-rpc.git"
     },
-    "main":"./build/rpc_node.js",
+    "licenses":[
+        {
+            "type":"MIT",
+            "url":"http://www.opensource.org/licenses/mit-license.php"
+        }
+    ],
+    "main":"index",
     "keywords":[
         "rpc",
         "websocket",
+        "message",
+        "push",
+        "communication",
         "ws"
     ],
     "devDependencies":{
-        "grunt":"~0.4.1",
+        "grunt":">=0.4.1",
+        "grunt-contrib-uglify":">=0.2.2",
+        "grunt-contrib-jshint":">=0.6.0",
+        "grunt-requirejs":">=0.4.0",
         "socket.io":"~0.9.16",
-        "grunt-contrib-uglify":"~0.2.2",
-        "grunt-contrib-jshint":"~0.6.0",
-        "grunt-requirejs":">=0.3.5"
+        "sockjs":"~0.3.7"
     },
     "dependencies":{
-        "amdefine":"~0.0.5"
+        "amdefine":"~0.0.8"
     }
 }
