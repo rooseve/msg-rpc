@@ -3,6 +3,7 @@ msg-rpc
 
 Bidirectional Rpc(Remote procedure call) support over simple message interface, such as [WebSocket](https://developer.mozilla.org/en/docs/WebSockets "WebSocket").
 
+Now there are WebSocket [examples](https://github.com/rooseve/msg-rpc/tree/master/example) based on [socket.io](http://socket.io/) and [sockjs](https://github.com/sockjs). Also there is a simple nodejs local example, where sending messages is just passing variables.
 
 ### Simpe Message Vs. Rpc
 
