@@ -114,7 +114,10 @@ Here's a websocket example between browser/nodejs.
 
 > **There are socket.io/sockjs/node [examples](https://github.com/rooseve/msg-rpc/tree/master/example), reference them for more details.**
 
-### Advanced usage: Rpc Service
+
+### Advanced usage
+
+#### Rpc Service
 
 Rpc itself is very like http request, client request, server response. But the simple message interface here, e.g. WebSocket, is bidirectional, server can push messages. On the client side, there must be some way to recevie these messages, and the most important, forward them to the right function to deal with.
 
