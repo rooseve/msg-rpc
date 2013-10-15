@@ -5,180 +5,126 @@ Bidirectional Rpc(Remote procedure call) support over simple message interface, 
 
 Now there are WebSocket [examples](https://github.com/rooseve/msg-rpc/tree/master/example) based on [socket.io](http://socket.io/) and [sockjs](https://github.com/sockjs). Also there is a simple nodejs local example, where sending messages is just passing variables.
 
-### Simpe Message Vs. Rpc
+> [Simpe Message Vs. Rpc](https://github.com/rooseve/msg-rpc/tree/master/docs/simple_message_vs_rpc.md)
 
-Simpe Message, e.g.Websocket, provides bidirectional message communication support, the interface is very simple(actually too simple for a real app), and in simple terms, it's like this:
+###Features
 
-Client:
+- Simple. Just over simple sendMessage/onMessage interface, no other dependencies.
 
-- Send a message to the server
+- Powerful. Not only normal Rpc, but also a special one: [Rpc Service](https://github.com/rooseve/msg-rpc#rpc-service), which make the rpc pushable, in other words, the server can also send a request to the client and expect some kind of response. 
 
-		sendMessage(data);
+
+###How to use?
+
+Basically, there're two preparatory things to be done, whether server or client:
+
+1. Tell how to send out a message
+
+2. Forward the messages came in to the msg-rpc
+
+
+Here's a websocket example between browser/nodejs. 
+
+#####Server (NodeJs):
+
+- Install the node module
+
+		npm install msg-rpc	
 	
-- Listen for messages came from the server
+- Create a rpc server object, named rpcSvr, and do the preparatory work (tell how to send message, and forward the messages recevied)
 
-		onMessage(function(data){
-			//handle the data
+		var MsgRpc = require("msg-rpc"), RpcSvrCls = MsgRpc.rpcServer;
+
+		var rpcSvr = new RpcSvrCls({
+			//the real message sending function
+			sendMessage : function(msg, socketId, cb) {
+				
+				//socketId should be a string, which is passed in by the message function(below)
+	
+				//send the msg
+				//in socket.io, it'll like this:
+				//clients[socketId].send(JSON.stringify(msg));
+		
+				//response
+				cb(error, result);
+			}
+		});
+	
+		//forward the message to the rpcSvr
+		//in socket.io, it'll like this:
+		//clients[socket.id] = socket;
+		//socket.on('message', function(data) {
+	
+			//var msg = JSON.parse(data);
+	
+			//pass the message to the rpcSvr, with the socketId
+			if (rpcSvr.isRpcMsg(msg))
+				rpcSvr.message(msg, socket.id);
+		//});
+
+- Then register some procedures to listen for rpc requests.
+
+		//Register a normal procedure named procedureA
+		rpcSvr.regRpc('procedureA', function(socketId, args, callback) {
+		
+			//response to the request
+			callback(error, result);
 		});
 
-Server:
 
-- Send a message to a specific client (normally identified by socket)
+#####Browser:
 
-		sendMessage(client, data);
+- Load the lib, create a rpc client, named rpcClient, and do the preparatory work (tell how to send message, and forward the messages recevied)
 
-- Listen for messages came from clients
+		<script src="/build/rpc_client.js"></script>
 
-		onMessage(function(client, data){
-			//get the message from client
+		//create a rpc client, tell how to send the message out
+		var rpcClient = new MsgRpc.Client({
+		
+			//the real message sending function
+			sendMessage : function(msg) {
+				
+				//in socket.io, it'll like this:
+				//socket.send(JSON.stringify(msg));
+			}
+		});
+	
+		//forward the messages received to the rpcClient
+		//in socket.io, it'll like this:
+		//socket.on('message', function(data) {
+		
+			//var msg = JSON.parse(data);
+		
+			//here, pass the msg to the rpcClient
+			if (rpcClient.isRpcMsg(msg))
+				rpcClient.message(msg);
+		//});
+	
+- Then use the rpcClient to do the work.
+
+		rpcClient.rpc('procedureA', {
+			a : 1
+		}, function(err, result) {
+	
+			//here's the procedure response
+			console.log('procedureA return ', arguments);
 		});
 
 
-In the real world, when sending out a message, some kind of response is supposed, or we can say we expect it to be interactive, just like the way Http works.
 
-Rpc(Remote procedure call) is very like http request, the interface is like this:
+> **There are socket.io/sockjs/node [examples](https://github.com/rooseve/msg-rpc/tree/master/example), reference them for more details.**
 
-Server:
-
-- Register a pocedure:
-
-		registerRpc(remoterPocedureName, function(client, arguments, callback){
-	
-			//response to the client which called this.
-			//callback(error, result)
-		});
-
-Client:
-
-- Call the pocedure:
-
-		rpc(remoterPocedureName, arguments, function(error, result){
-			
-			//here, both error/result are came from the remote server 
-		})
-
-
-#### What's the trick here?
-
-With only simple message interface, if you send 2 messages, say MsgA, MsgB. Then when you got a message back, let's say MsgC, it might be a response to some message sent out, but to which one? MsgA or MsgB, or something other?
-
-Rpc solves such problem, when you got the rpc callback, it's for sure to be the result of corresponding rpc request.
-
-### What does msg-rpc do?
-
-Providing rpc support just over the simple message interface you got.
-
-Even more, msg-rpc also provides a special kind of rpc called **Rpc Service**, which make the rpc pushable, in other words, the server can also send a request to the client and expect some kind of response. 
-
-### How to use?
-
-#### There are socket.io/sockjs/node examples, reference them for more details.
-
-- Browser:
-
-	- Load the lib
-	
-			<script src="/build/rpc_client.js"></script>
-	
-	- Create a rpcClient, and do some preparatory work (tell how to send message, and forward the messages recevied)
-	
-			//create a rpc client, tell how to send the message out
-			var rpcClient = new MsgRpc.Client({
-			
-				//the real message sending function
-				sendMessage : function(msg) {
-					
-					//in socket.io, it'll like this:
-					//socket.send(JSON.stringify(msg));
-				}
-			});
-		
-			//forward the messages received to the rpcClient
-			//in socket.io, it'll like this:
-			//socket.on('message', function(data) {
-			
-				//var msg = JSON.parse(data);
-			
-				//here, pass the msg to the rpcClient
-				if (rpcClient.isRpcMsg(msg))
-					rpcClient.message(msg);
-			//});
-		
-	- Then use the rpcClient to do the work.
-	
-			rpcClient.rpc('procedureA', {
-				a : 1
-			}, function(err, result) {
-		
-				//here's the procedure response
-				console.log('procedureA return ', arguments);
-			});
-
-
-- Server (NodeJs):
-
-	- Install the node module
-	
-			npm install msg-rpc
-
-	- load the lib
-
-			var MsgRpc = require("msg-rpc"), RpcSvrCls = MsgRpc.rpcServer;
-		
-	- Create a rpcSvr, and do some preparatory work (tell how to send message, and forward the messages recevied)
-	
-			var rpcSvr = new RpcSvrCls({
-				//the real message sending function
-				sendMessage : function(msg, socketId, cb) {
-					
-					//socketId should be a string, which is passed in by the message function(below)
-		
-					//send the msg
-					//in socket.io, it'll like this:
-					//clients[socketId].send(JSON.stringify(msg));
-			
-					//response
-					cb(error, result);
-				}
-			});
-		
-			//forward the message to the rpcSvr
-			//in socket.io, it'll like this:
-			//clients[socket.id] = socket;
-			//socket.on('message', function(data) {
-		
-				//var msg = JSON.parse(data);
-		
-				//pass the message to the rpcSvr, with the socketId
-				if (rpcSvr.isRpcMsg(msg))
-					rpcSvr.message(msg, socket.id);
-			//});
-	
-	- Then register some procedures to listen for rpc requests.
-
-			//Register a normal procedure named procedureA
-			rpcSvr.regRpc('procedureA', function(socketId, args, callback) {
-			
-				//response to the request
-				callback(error, result);
-			});
-
-
-### Rpc Service
+### Advanced usage: Rpc Service
 
 Rpc itself is very like http request, client request, server response. But the simple message interface here, e.g. WebSocket, is bidirectional, server can push messages. On the client side, there must be some way to recevie these messages, and the most important, forward them to the right function to deal with.
 
-That's why another kind of Rpc came out, named as **Rpc Service**.
+That's why another kind of Rpc came out, named as **Rpc Service**, here's what it's like:
 
-We begin with the Server side this time:
+	//Register a service named serviceB
+	rpcSvr.regService('serviceB', function(socketId, args, callback, messenger) {
 
-- Server:
-
-		//Register a service named serviceB
-		rpcSvr.regService('serviceB', function(socketId, args, callback, messenger) {
-	
-			//compared to regRpc, here we got an extra "messenger" parameter
-		});
+		//compared to regRpc, here we got an extra "messenger" parameter
+	});
 
 The key point is the 3rd parameter **messenger**.
 
@@ -190,37 +136,36 @@ Let's say there is such a pair, MsgerA and MsgerB. It's very like that there's a
 
 A messenger, e.g. MsgerA got 2 group of functions:
 
-- sendMsg / onMsg
+##### sendMsg / onMsg
 
-	- Send a message to MsgerB:
-	
-			MsgerA.sendMsg(msg); 
-	
-	- Receive messages from MsgerB
+- Send a message to MsgerB:
 
-			MsgerA.onMsg(function(msg){
-				//messages from MsgerA
-			});
+		MsgerA.sendMsg(msg); 
+
+- Receive messages from MsgerB
+
+		MsgerA.onMsg(function(msg){
+			//messages from MsgerA
+		});
 	
 
-- callCmd / onCmd (cmd is very like rpc, just to distinguish)
+##### callCmd / onCmd (cmd is very like rpc, just to distinguish)
  
- 	- Call cmd which will be excuted on MsgerB
-	 
-			MsgerA.callCmd('cmdA', args, function(err, result) {
-				//here we got the response from MsgerB
-			});
+- Call cmd which will be excuted on MsgerB
+ 
+		MsgerA.callCmd('cmdA', args, function(err, result) {
+			//here we got the response from MsgerB
+		});
 
 
-	- Listen for cmd requests from MsgerB
+- Listen for cmd requests from MsgerB
+
+		MsgerA.onCmd(function(cmd, args, callbak) {
 	
+			//do something, and response to MsgerB
+			callbak(error, result);
+		});
 
-			MsgerA.onCmd(function(cmd, args, callbak) {
-		
-				//do something, and response to MsgerB
-				callbak(error, result);
-			});
-	
 
 With this pair of messengers, bidirectional message/cmd(rpc) communication is supported.
 
@@ -241,9 +186,10 @@ On the server side, rpcSvr.regService('serviceB', function(socketId, args, callb
 
 #### How could messengers be helpful?
 
-Messenger is just a variable with msg/cmd interface, when some client call this Rpc Service, the server and client could both keep the messenger variables, and talk to each other. 
+Messenger is just a variable with msg/cmd interface, when some client call this Rpc Service, the server and client could both keep the messenger variables, and talk to each other in the future.
 	
 Imagine that there's a group chat app, the client could rpc a service to join some group, and the server will keep every client's messenger. When some client send out a message through its messenger, the corresponding messenger on the server side will received that, and the server could just loop through all other messengers in this group and call the sendMsg function. Very easy, right?
+
 
 ###How to build
 
@@ -267,3 +213,5 @@ The some final libraries will be generated in the build folder, e.g.
 - rpc_client.js, works on browser
 
 - rpc_node.js, works on Node
+
+

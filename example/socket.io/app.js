@@ -34,7 +34,7 @@ io.sockets.on('connection', function(socket) {
 	//add to the clients
 	clients[socket.id] = socket;
 
-	//proxy the message to the rpcSvr
+	//forward messages to the rpcSvr
 	socket.on('message', function(data) {
 
 		var msg = JSON.parse(data);

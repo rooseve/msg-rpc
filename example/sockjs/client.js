@@ -10,7 +10,7 @@ var rpcClient = new MsgRpc.Client({
 	}
 });
 
-//proxy the message came in to the rpcClient
+//forward messages came in to the rpcClient
 sock.onmessage = function(e) {
 
 	var msg = JSON.parse(e.data);

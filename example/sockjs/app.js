@@ -39,6 +39,7 @@ echo.on('connection', function(conn) {
 	//add to the clients
 	clients[conn.__socketId] = conn;
 
+	//forward messages
 	conn.on('data', function(data) {
 
 		var msg = JSON.parse(data);
