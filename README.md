@@ -148,7 +148,7 @@ A messenger, e.g. MsgerA got 2 group of functions:
 - Receive messages from MsgerB
 
 		MsgerA.onMsg(function(msg){
-			//messages from MsgerA
+			//messages from MsgerB
 		});
 	
 
