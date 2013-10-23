@@ -16,14 +16,14 @@ Now there are WebSocket [examples](https://github.com/rooseve/msg-rpc/tree/maste
 
 ###How to use?
 
-Basically, there're two preparatory things to be done, whether server or client:
+Basically, there're two preparatory things to be done, for both server or client:
 
 1. Tell how to send out a message
-
 2. Forward the messages came in to the msg-rpc
 
+*Actually there's normally a 3rd for the server, when the client disconnect, the server should do some clean up work.*
 
-Here's a websocket example between browser/nodejs. 
+Here's a websocket example between browser/nodejs, but just for illustration purposes. Reference [these examples](https://github.com/rooseve/msg-rpc/tree/master/example) for more details.
 
 #####Server (NodeJs):
 
@@ -60,6 +60,14 @@ Here's a websocket example between browser/nodejs.
 			//pass the message to the rpcSvr, with the socketId
 			if (rpcSvr.isRpcMsg(msg))
 				rpcSvr.message(msg, socket.id);
+		//});
+
+		//cleanup when disconnect
+		//socket.on('disconnect', function() {
+	
+			rpcSvr.clearupSocketId(socket.id);
+
+			delete clients[socket.id];
 		//});
 
 - Then register some procedures to listen for rpc requests.
@@ -112,7 +120,7 @@ Here's a websocket example between browser/nodejs.
 
 
 
-> **There are socket.io/sockjs/node [examples](https://github.com/rooseve/msg-rpc/tree/master/example), reference them for more details.**
+> **Again, there are socket.io/sockjs/node [examples](https://github.com/rooseve/msg-rpc/tree/master/example), reference them for more details.**
 
 
 ### Advanced usage
