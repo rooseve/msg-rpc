@@ -14,6 +14,8 @@ Now there are WebSocket [examples](https://github.com/rooseve/msg-rpc/tree/maste
 - Powerful. Not only normal Rpc, but also a special one: [Rpc Service](https://github.com/rooseve/msg-rpc#rpc-service), which make the rpc pushable, in other words, the server can also send a request to the client and expect some kind of response. 
 
 
+###[Release notes](https://github.com/rooseve/msg-rpc/blob/master/docs/release_notes.md)
+
 ###How to use?
 
 Basically, there're two preparatory things to be done, for both server or client:
