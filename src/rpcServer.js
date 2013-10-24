@@ -26,16 +26,24 @@ define([ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], function(utils, 
 				return;
 			}
 
-			var self = this, regCmdHash = this.__regCmdHash;
+			var self = this, regCmdHash = this.__regCmdHash, msger = null;
 
 			function respCb(err, result) {
+
+				if (err) {
+
+					//destroy the messenger if something wrong
+					if (msger && msger.destroy) {
+						msger.destroy();
+					}
+				}
 
 				self.__respCmdReq(err, result, request, socketId);
 			}
 
 			if (this.hasReged(request.cmd)) {
 
-				var msger = this.isService(request.cmd) ? this.__getMessenger(request.tag, socketId) : undefined;
+				msger = this.isService(request.cmd) ? this.__getMessenger(request.tag, socketId) : undefined;
 
 				(regCmdHash[request.cmd])(socketId, request.args || {}, respCb, msger);
 

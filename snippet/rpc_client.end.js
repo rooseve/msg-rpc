@@ -1,6 +1,7 @@
 
 var MsgRpc={
 		utils:require('utils'),
+		event:require('event'),
 		rpcClient: require('rpcClient'),
 		Client: require('rpcClient')
 };

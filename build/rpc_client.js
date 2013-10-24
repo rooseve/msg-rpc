@@ -1900,8 +1900,13 @@ define('rpcClient',[ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], func
 
 				var cbArgs = [ err, result ];
 
-				if (isService)
-					cbArgs.push(this.__getMessenger(tag));
+				if (!err) {
+
+					//rpc service, create a client side messenger
+					if (isService) {
+						cbArgs.push(this.__getMessenger(tag));
+					}
+				}
 
 				cbInfo.cb.apply(undefined, cbArgs);
 			}
@@ -1955,6 +1960,7 @@ define('rpcClient',[ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], func
 });
 var MsgRpc={
 		utils:require('utils'),
+		event:require('event'),
 		rpcClient: require('rpcClient'),
 		Client: require('rpcClient')
 };

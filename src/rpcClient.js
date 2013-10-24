@@ -188,8 +188,13 @@ define([ 'utils', 'consts', 'errors', 'rpcBase', 'messenger' ], function(utils, 
 
 				var cbArgs = [ err, result ];
 
-				if (isService)
-					cbArgs.push(this.__getMessenger(tag));
+				if (!err) {
+
+					//rpc service, create a client side messenger
+					if (isService) {
+						cbArgs.push(this.__getMessenger(tag));
+					}
+				}
 
 				cbInfo.cb.apply(undefined, cbArgs);
 			}
