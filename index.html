@@ -31,37 +31,263 @@
         <hr>
 
         <section id="main_content">
-          <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+          <h1>
+<a name="msg-rpc" class="anchor" href="#msg-rpc"><span class="octicon octicon-link"></span></a>msg-rpc</h1>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>Bidirectional Rpc(Remote procedure call) support over simple message interface, such as <a href="https://developer.mozilla.org/en/docs/WebSockets" title="WebSocket">WebSocket</a>.</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<p>Now there are WebSocket <a href="https://github.com/rooseve/msg-rpc/tree/master/example">examples</a> based on <a href="http://socket.io/">socket.io</a> and <a href="https://github.com/sockjs">sockjs</a>. Also there is a simple nodejs local example, where sending messages is just passing variables.</p>
+
+<blockquote>
+<p><a href="https://github.com/rooseve/msg-rpc/tree/master/docs/simple_message_vs_rpc.md">Simpe Message Vs. Rpc</a></p>
+</blockquote>
+
+<h3>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h3>
+
+<ul>
+<li><p>Simple. Just over simple sendMessage/onMessage interface, no other dependencies.</p></li>
+<li><p>Powerful. Not only normal Rpc, but also a special one: <a href="https://github.com/rooseve/msg-rpc#rpc-service">Rpc Service</a>, which make the rpc pushable, in other words, the server can also send a request to the client and expect some kind of response. </p></li>
+</ul><h3>
+<a name="how-to-use" class="anchor" href="#how-to-use"><span class="octicon octicon-link"></span></a>How to use?</h3>
+
+<p>Basically, there're two preparatory things to be done, for both server or client:</p>
+
+<ol>
+<li>Tell how to send out a message</li>
+<li>Forward the messages came in to the msg-rpc</li>
+</ol><p><em>Actually there's normally a 3rd for the server, when the client disconnect, the server should do some clean up work.</em></p>
+
+<p>Here's a websocket example between browser/nodejs, but just for illustration purposes. Reference <a href="https://github.com/rooseve/msg-rpc/tree/master/example">these examples</a> for more details.</p>
+
+<h5>
+<a name="server-nodejs" class="anchor" href="#server-nodejs"><span class="octicon octicon-link"></span></a>Server (NodeJs):</h5>
+
+<ul>
+<li>
+<p>Install the node module</p>
+
+<pre><code>npm install msg-rpc 
+</code></pre>
+</li>
+<li>
+<p>Create a rpc server object, named rpcSvr, and do the preparatory work (tell how to send message, and forward the messages recevied)</p>
+
+<pre><code>var MsgRpc = require("msg-rpc"), RpcSvrCls = MsgRpc.rpcServer;
+
+var rpcSvr = new RpcSvrCls({
+    //the real message sending function
+    sendMessage : function(msg, socketId, cb) {
+
+        //socketId should be a string, which is passed in by the message function(below)
+
+        //send the msg
+        //in socket.io, it'll like this:
+        //clients[socketId].send(JSON.stringify(msg));
+
+        //response
+        cb(error, result);
+    }
+});
+
+//forward the message to the rpcSvr
+//in socket.io, it'll like this:
+//clients[socket.id] = socket;
+//socket.on('message', function(data) {
+
+    //var msg = JSON.parse(data);
+
+    //pass the message to the rpcSvr, with the socketId
+    if (rpcSvr.isRpcMsg(msg))
+        rpcSvr.message(msg, socket.id);
+//});
+
+//cleanup when disconnect
+//socket.on('disconnect', function() {
+
+    rpcSvr.clearupSocketId(socket.id);
+
+    delete clients[socket.id];
+//});
+</code></pre>
+</li>
+<li>
+<p>Then register some procedures to listen for rpc requests.</p>
+
+<pre><code>//Register a normal procedure named procedureA
+rpcSvr.regRpc('procedureA', function(socketId, args, callback) {
+
+    //response to the request
+    callback(error, result);
+});
+</code></pre>
+</li>
+</ul><h5>
+<a name="browser" class="anchor" href="#browser"><span class="octicon octicon-link"></span></a>Browser:</h5>
+
+<ul>
+<li>
+<p>Load the lib, create a rpc client, named rpcClient, and do the preparatory work (tell how to send message, and forward the messages recevied)</p>
+
+<pre><code>&lt;script src="/build/rpc_client.js"&gt;&lt;/script&gt;
+
+//create a rpc client, tell how to send the message out
+var rpcClient = new MsgRpc.Client({
+
+    //the real message sending function
+    sendMessage : function(msg) {
+
+        //in socket.io, it'll like this:
+        //socket.send(JSON.stringify(msg));
+    }
+});
+
+//forward the messages received to the rpcClient
+//in socket.io, it'll like this:
+//socket.on('message', function(data) {
+
+    //var msg = JSON.parse(data);
+
+    //here, pass the msg to the rpcClient
+    if (rpcClient.isRpcMsg(msg))
+        rpcClient.message(msg);
+//});
+</code></pre>
+</li>
+<li>
+<p>Then use the rpcClient to do the work.</p>
+
+<pre><code>rpcClient.rpc('procedureA', {
+    a : 1
+}, function(err, result) {
+
+    //here's the procedure response
+    console.log('procedureA return ', arguments);
+});
+</code></pre>
+</li>
+</ul><blockquote>
+<p><strong>Again, there are socket.io/sockjs/node <a href="https://github.com/rooseve/msg-rpc/tree/master/example">examples</a>, reference them for more details.</strong></p>
+</blockquote>
+
+<h3>
+<a name="advanced-usage" class="anchor" href="#advanced-usage"><span class="octicon octicon-link"></span></a>Advanced usage</h3>
+
+<h4>
+<a name="rpc-service" class="anchor" href="#rpc-service"><span class="octicon octicon-link"></span></a>Rpc Service</h4>
+
+<p>Rpc itself is very like http request, client request, server response. But the simple message interface here, e.g. WebSocket, is bidirectional, server can push messages. On the client side, there must be some way to recevie these messages, and the most important, forward them to the right function to deal with.</p>
+
+<p>That's why another kind of Rpc came out, named as <strong>Rpc Service</strong>, here's what it's like:</p>
+
+<pre><code>//Register a service named serviceB
+rpcSvr.regService('serviceB', function(socketId, args, callback, messenger) {
+
+    //compared to regRpc, here we got an extra "messenger" parameter
+});
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>The key point is the 3rd parameter <strong>messenger</strong>.</p>
+
+<h4>
+<a name="whats-messenger" class="anchor" href="#whats-messenger"><span class="octicon octicon-link"></span></a>What's messenger?</h4>
+
+<p>Messenger works as a pair, normally one on the client side, one on the server side. Both work the same way(share the same source code).</p>
+
+<p>Let's say there is such a pair, MsgerA and MsgerB. It's very like that there's a private pipeline between them, so they can communicate with each other without any other conserns. MsgerA send a message, MsgerB will get that, and vice versa.</p>
+
+<p>A messenger, e.g. MsgerA got 2 group of functions:</p>
+
+<h5>
+<a name="sendmsg--onmsg" class="anchor" href="#sendmsg--onmsg"><span class="octicon octicon-link"></span></a>sendMsg / onMsg</h5>
+
+<ul>
+<li>
+<p>Send a message to MsgerB:</p>
+
+<pre><code>MsgerA.sendMsg(msg); 
+</code></pre>
+</li>
+<li>
+<p>Receive messages from MsgerB</p>
+
+<pre><code>MsgerA.onMsg(function(msg){
+    //messages from MsgerB
+});
+</code></pre>
+</li>
+</ul><h5>
+<a name="callcmd--oncmd-cmd-is-very-like-rpc-just-to-distinguish" class="anchor" href="#callcmd--oncmd-cmd-is-very-like-rpc-just-to-distinguish"><span class="octicon octicon-link"></span></a>callCmd / onCmd (cmd is very like rpc, just to distinguish)</h5>
+
+<ul>
+<li>
+<p>Call cmd which will be excuted on MsgerB</p>
+
+<pre><code>MsgerA.callCmd('cmdA', args, function(err, result) {
+    //here we got the response from MsgerB
+});
+</code></pre>
+</li>
+<li>
+<p>Listen for cmd requests from MsgerB</p>
+
+<pre><code>MsgerA.onCmd(function(cmd, args, callbak) {
+
+    //do something, and response to MsgerB
+    callbak(error, result);
+});
+</code></pre>
+</li>
+</ul><p>With this pair of messengers, bidirectional message/cmd(rpc) communication is supported.</p>
+
+<h4>
+<a name="how-the-client-got-the-messenger" class="anchor" href="#how-the-client-got-the-messenger"><span class="octicon octicon-link"></span></a>How the client got the messenger?</h4>
+
+<p>Well, it's up to the Server, client still use the rpc method, but if the procedure is registered by "regService" on the server, then it's a Service procedure, and messenger will be passed in as the 3rd parameter.</p>
+
+<p>On the server side, rpcSvr.regService('serviceB', function(socketId, args, callback, msgerSvr)...., then, on the client side:</p>
+
+<pre><code>rpcClient.rpc('serviceB', args, function(err, result, msgerClient) {
+    //here you got the messenger "msgerClient", and with msgerSvr as a pair.
+    //just say hello to the msgerSvr
+    msgerClient.sendMsg({
+        hi : 'hello'
+    });
+}
+</code></pre>
+
+<h4>
+<a name="how-could-messengers-be-helpful" class="anchor" href="#how-could-messengers-be-helpful"><span class="octicon octicon-link"></span></a>How could messengers be helpful?</h4>
+
+<p>Messenger is just a variable with msg/cmd interface, when some client call this Rpc Service, the server and client could both keep the messenger variables, and talk to each other in the future.</p>
+
+<p>Imagine that there's a group chat app, the client could rpc a service to join some group, and the server will keep every client's messenger. When some client send out a message through its messenger, the corresponding messenger on the server side will received that, and the server could just loop through all other messengers in this group and call the sendMsg function. Very easy, right?</p>
 
 <h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<a name="how-to-build" class="anchor" href="#how-to-build"><span class="octicon octicon-link"></span></a>How to build</h3>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<p>msg-rpc use <a href="http://gruntjs.com/">Grunt</a> to build the source under src folder.</p>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+<p>In the project folder, run:</p>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<pre><code>npm install
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+grunt
+</code></pre>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<p>If grunt not installed yet, run:</p>
 
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+<pre><code>npm install -g grunt-cli
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+grunt
+</code></pre>
+
+<p>The some final libraries will be generated in the build folder, e.g.</p>
+
+<ul>
+<li><p>rpc_client.js, works on browser</p></li>
+<li><p>rpc_node.js, works on Node</p></li>
+</ul>
         </section>
 
         <footer>
